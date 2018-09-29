@@ -8,11 +8,11 @@ document.addEventListener("DOMContentLoaded", function() {
   const context = canvas.getContext("2d");
 
   let player = { x: 20, y: 20 };
-  let enemy = { x: 40, y: 40 };
+  let enemy = { x: 80, y: 80 };
   let radius = 5;
   let movementStep = 2;
 
-  function drawCircle(x, y, color) {
+  let drawCircle = (x, y, color) => {
     context.beginPath();
     context.arc(x, y, radius, 0,2 * Math.PI);
     context.fillStyle = color;
@@ -22,10 +22,13 @@ document.addEventListener("DOMContentLoaded", function() {
     context.stroke();
   }
 
-  let drawEnemy = (x, y) => drawCircle(x, y, "#f7ff00");
-  let drawPlayer = (x, y) => drawCircle(x, y, "#ddd");
+  let update = (enemy, player) => {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    drawCircle(enemy.x, enemy.y, "#f7ff00");
+    drawCircle(player.x, player.y, "#ddd");
+  }
 
-  document.onkeydown = function(event) {
+  document.onkeydown = event => {
     switch(event.keyCode) {
       case 65:
         console.log("a");
@@ -58,35 +61,25 @@ document.addEventListener("DOMContentLoaded", function() {
   let canMoveDown = y => y + radius < canvas.height;
   let canMoveUp = y => y - radius > 0;
 
-  let moveEnemy = () => {
-    let movement = Math.random();
-    if(movement <= .25) {
-      if(!canMoveDown(enemy.x))
-        return;
-      enemy.x += movementStep;
-    } 
-    if(movement > .25 && movement <= .5) {
-      if(!canMoveRight(enemy.x))
-        return;
-      enemy.x += movementStep;
-    } 
-    if(movement > .5 && movement <= .75) {
-      if(!canMoveUp(enemy.x))
-        return;
+  let moveEnemy = (enemy) => {
+    if(enemy.x >= player.x) 
       enemy.x -= movementStep;
-    } 
-    if(movement > .75) {
-      if(!canMoveLeft(enemy.x))
-        return;
-      enemy.x -= movementStep;
-    }
+    
+    if(enemy.x <= player.x)
+      enemy.x += movementStep;  
+    
+    if(enemy.y <= player.y)
+      enemy.y += movementStep;  
+    
+    if(enemy.y >= player.y)
+      enemy.y -= movementStep;
+
+    return enemy;
   }
 
   setInterval(() => {
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    drawPlayer(player.x, player.y);
-    moveEnemy();
-    drawEnemy(enemy.x, enemy.x);
+    enemy = moveEnemy(enemy);
+    update(enemy, player);
   }, 50);
 
 }, false);
