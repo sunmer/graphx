@@ -11,23 +11,21 @@ document.addEventListener("DOMContentLoaded", () => {
   const context = canvas.getContext("2d");
   const frame = { rate: 10, index: 0, length: 9 }
   const movementStep = 1;
-  let player: Entity = new Entity(canvas, 20, 20, 6);
-  let enemy: Entity = new Entity(canvas, 50, 50, 9);
+  let player: Entity = new Entity(20, 20, 2, "#dddddd");
+  let enemy: Entity = new Entity(50, 50, 3, "#d7ff07");
   let playerController: Controller = new Controller(player);
 
-  let draw = (x: number, y: number, color: string) => {
+  let draw = (entity: Entity) => {
     context.beginPath();
-    context.rect(x, y, 10, 10);
-    context.fillStyle = color;
-    context.lineWidth = 1;
+    context.rect(entity.x, entity.y, entity.radius, entity.radius);
+    context.fillStyle = entity.color;
     context.closePath();
     context.fill();
-    context.stroke();
   }
 
   document.onkeydown = event => playerController.keydown(event);
 
-  let moveEnemy = () => {
+  let updateEnemy = () => {
     if(enemy.x >= player.x) 
       enemy.x -= movementStep;
     
@@ -43,29 +41,34 @@ document.addEventListener("DOMContentLoaded", () => {
     return enemy;
   }
 
-  let movePlayer = () => {
-    if(playerController.isMoving.up)
+  let updatePlayer = () => {
+    if(canMoveUp(player) && playerController.isMoving.up)
       player.y -= movementStep;
-    if(playerController.isMoving.right)
+    if(canMoveRight(player) && playerController.isMoving.right)
       player.x += movementStep;
-    if(playerController.isMoving.down)
+    if(canMoveDown(player) && playerController.isMoving.down)
       player.y += movementStep;
-    if(playerController.isMoving.left)
+    if(canMoveLeft(player) && playerController.isMoving.left)
       player.x -= movementStep;
   }
+
+  let canMoveLeft = (entity: Entity) => entity.x > 0;
+  let canMoveRight = (entity: Entity) => entity.x + entity.radius < canvas.width;
+  let canMoveDown = (entity: Entity) => entity.y + entity.radius < canvas.height;
+  let canMoveUp = (entity: Entity) => entity.y > 0;
 
   setInterval(() => {
     if(frame.index === frame.length)
       frame.index = 0;
     
     if(frame.index % enemy.speed === 0)
-      moveEnemy();
+      updateEnemy();
     if(frame.index % player.speed === 0)
-      movePlayer();
-      
+      updatePlayer();
+
     context.clearRect(0, 0, canvas.width, canvas.height);
-    draw(player.x, player.y, "#dddddd");
-    draw(enemy.x, enemy.y, "#f7ff00");
+    draw(player);
+    draw(enemy);
 
     frame.index++
   }, frame.rate);

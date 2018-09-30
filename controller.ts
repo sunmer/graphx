@@ -11,47 +11,37 @@ export default class Controller {
   }
 
   keydown = (event: KeyboardEvent) => {
+    this.resetMoves();
+
     switch(event.keyCode) {
       case 65:
         console.log("a");
         break;
       case 40:
-        if(!this.entity.canMoveDown())
-          return;
         this.btnDown();
         break;
       case 39:
-        if(!this.entity.canMoveRight())
-          return;
         this.btnRight();
         break;
       case 38:
-        if(!this.entity.canMoveUp())
-          return;
         this.btnUp();
         break;
       case 37:
-        if(!this.entity.canMoveLeft()) 
-          return;
         this.btnLeft();
         break;
     }
   }
 
-  btnUp = () => { 
-    this.resetMoves();
+  btnUp = () => {
     this.isMoving.up = true;
   };
   btnDown = () => {
-    this.resetMoves();
     this.isMoving.down = true;
   }
-  btnLeft = () => { 
-    this.resetMoves();
+  btnLeft = () => {
     this.isMoving.left = true;
   }
-  btnRight = () => { 
-    this.resetMoves();
+  btnRight = () => {
     this.isMoving.right = true;
   }
 
