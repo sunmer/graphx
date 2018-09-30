@@ -18,31 +18,18 @@ export default class Controller {
         console.log("a");
         break;
       case 40:
-        this.btnDown();
+        this.isMoving.down = true;
         break;
       case 39:
-        this.btnRight();
+        this.isMoving.right = true;
         break;
       case 38:
-        this.btnUp();
+        this.isMoving.up = true;
         break;
       case 37:
-        this.btnLeft();
+        this.isMoving.left = true;
         break;
     }
-  }
-
-  btnUp = () => {
-    this.isMoving.up = true;
-  };
-  btnDown = () => {
-    this.isMoving.down = true;
-  }
-  btnLeft = () => {
-    this.isMoving.left = true;
-  }
-  btnRight = () => {
-    this.isMoving.right = true;
   }
 
   resetMoves = () => {
