@@ -1,17 +1,8 @@
+import Entity from "./entity";
+import Controller from "./controller";
+
 const canvasWidth = 200;
 const canvasHeight = 200;
-
-interface Entity {
-  x: number;
-  y: number;
-  speed: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9,
-  movement?: {
-    up: boolean,
-    down: boolean,
-    left: boolean,
-    right: boolean
-  }
-}
 
 document.addEventListener("DOMContentLoaded", () => {
   const canvas = <HTMLCanvasElement> document.getElementById("canvas");
@@ -20,25 +11,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const context = canvas.getContext("2d");
   const frame = { rate: 10, index: 0, length: 9 }
   const movementStep = 1;
-  let player: Entity = { 
-    x: 20, 
-    y: 20, 
-    speed: 6, 
-    movement: { 
-      up: false, 
-      down: false, 
-      left: false, 
-      right: false 
-    } 
-  };
-  let enemy: Entity = { 
-    x: 80, 
-    y: 80, 
-    speed: 9
-  };
-  let radius = 5;
+  let player: Entity = new Entity(canvas, 20, 20, 6);
+  let enemy: Entity = new Entity(canvas, 50, 50, 9);
+  let playerController: Controller = new Controller(player);
 
-  let draw = (x, y, color) => {
+  let draw = (x: number, y: number, color: string) => {
     context.beginPath();
     context.rect(x, y, 10, 10);
     context.fillStyle = color;
@@ -48,47 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
     context.stroke();
   }
 
-  document.onkeydown = event => {
-    player.movement.up = false;
-    player.movement.down = false;
-    player.movement.left = false;
-    player.movement.right = false;
-
-    switch(event.keyCode) {
-      case 65:
-        console.log("a");
-        break;
-      case 40:
-        if(!canMoveDown(player.y))
-          return;
-        player.movement.up = false;
-        player.movement.down = true;
-        break;
-      case 39:
-        if(!canMoveRight(player.x))
-          return;
-        player.movement.left = false;
-        player.movement.right = true;
-        break;
-      case 38:
-        if(!canMoveUp(player.y))
-          return;
-        player.movement.down = false;
-        player.movement.up = true;
-        break;
-      case 37:
-        if(!canMoveLeft(player.x)) 
-          return;
-        player.movement.right = false;
-        player.movement.left = true;
-        break;
-    }
-  }
-
-  let canMoveLeft = x => x - radius > 0;
-  let canMoveRight = x => x + radius < canvas.width;
-  let canMoveDown = y => y + radius < canvas.height;
-  let canMoveUp = y => y - radius > 0;
+  document.onkeydown = event => playerController.keydown(event);
 
   let moveEnemy = () => {
     if(enemy.x >= player.x) 
@@ -107,13 +44,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   let movePlayer = () => {
-    if(player.movement.up)
+    if(playerController.isMoving.up)
       player.y -= movementStep;
-    if(player.movement.right)
+    if(playerController.isMoving.right)
       player.x += movementStep;
-    if(player.movement.down)
+    if(playerController.isMoving.down)
       player.y += movementStep;
-    if(player.movement.left)
+    if(playerController.isMoving.left)
       player.x -= movementStep;
   }
 
