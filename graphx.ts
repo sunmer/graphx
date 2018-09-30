@@ -1,31 +1,31 @@
 const canvasWidth = 200;
 const canvasHeight = 200;
 
-document.addEventListener("DOMContentLoaded", function() {
+interface Entity {
+  x: number;
+  y: number;
+  speed: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+}
+
+document.addEventListener("DOMContentLoaded", () => {
   const canvas = <HTMLCanvasElement> document.getElementById("canvas");
   canvas.width = canvasWidth;
   canvas.height = canvasHeight;
   const context = canvas.getContext("2d");
-
-  let player = { x: 20, y: 20 };
-  let enemy = { x: 80, y: 80 };
+  const frame = { rate: 10, index: 0, length: 9 }
+  const movementStep = 1;
+  let player: Entity = { x: 20, y: 20, speed: 1 };
+  let enemy: Entity = { x: 80, y: 80, speed: 9 };
   let radius = 5;
-  let movementStep = 2;
 
-  let drawCircle = (x, y, color) => {
+  let draw = (x, y, color) => {
     context.beginPath();
-    context.arc(x, y, radius, 0,2 * Math.PI);
+    context.rect(x, y, 10, 10);
     context.fillStyle = color;
     context.lineWidth = 1;
     context.closePath();
     context.fill();
     context.stroke();
-  }
-
-  let update = (enemy, player) => {
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    drawCircle(enemy.x, enemy.y, "#f7ff00");
-    drawCircle(player.x, player.y, "#ddd");
   }
 
   document.onkeydown = event => {
@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function() {
   let canMoveDown = y => y + radius < canvas.height;
   let canMoveUp = y => y - radius > 0;
 
-  let moveEnemy = (enemy) => {
+  let moveEnemy = () => {
     if(enemy.x >= player.x) 
       enemy.x -= movementStep;
     
@@ -78,8 +78,17 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   setInterval(() => {
-    enemy = moveEnemy(enemy);
-    update(enemy, player);
-  }, 50);
+    if(frame.index === frame.length)
+      frame.index = 0;
+    
+    if(frame.index % enemy.speed === 0)
+      moveEnemy();
+      
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    draw(player.x, player.y, "#dddddd");
+    draw(enemy.x, enemy.y, "#f7ff00");
+
+    frame.index++
+  }, frame.rate);
 
 }, false);
