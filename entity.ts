@@ -6,12 +6,14 @@ export default class Entity {
   speed: speed;
   radius = 10;
   color: string;
-
+  isMoving: { up: boolean, down: boolean, left: boolean, right: boolean };
+  
   constructor(x: number, y: number, speed: speed, color: string) {
     this.x = x;
     this.y = y;
     this.speed = speed;
     this.color = color;
+    this.isMoving = { up: false, down: false, left: false, right: false };    
   }
 
 }

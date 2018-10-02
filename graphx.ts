@@ -11,9 +11,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const context = canvas.getContext("2d");
   const frame = { rate: 10, index: 0, length: 9 }
   const movementStep = 1;
-  let player: Entity = new Entity(20, 20, 2, "#dddddd");
-  let enemy: Entity = new Entity(50, 50, 3, "#d7ff07");
+  let player: Entity = new Entity(20, 20, 1, "#dddddd");
+  let enemy: Entity = new Entity(50, 50, 4, "#c52323");
   let playerController: Controller = new Controller(player);
+  let enemyController: Controller = new Controller(enemy);
 
   let draw = (entity: Entity) => {
     context.beginPath();
@@ -23,33 +24,28 @@ document.addEventListener("DOMContentLoaded", () => {
     context.fill();
   }
 
-  document.onkeydown = event => playerController.keydown(event);
+  document.onkeydown = event => playerController.keydown(event.keyCode);
 
-  let updateEnemy = () => {
-    if(enemy.x >= player.x) 
-      enemy.x -= movementStep;
-    
-    if(enemy.x <= player.x)
-      enemy.x += movementStep;  
-    
-    if(enemy.y <= player.y)
-      enemy.y += movementStep;  
-    
-    if(enemy.y >= player.y)
-      enemy.y -= movementStep;
-
-    return enemy;
+  let movePlayer = (controller: Controller) => {
+    if(canMoveUp(controller.entity) && controller.entity.isMoving.up)
+      controller.entity.y -= movementStep;
+    if(canMoveRight(controller.entity) && controller.entity.isMoving.right)
+      controller.entity.x += movementStep;
+    if(canMoveDown(controller.entity) && controller.entity.isMoving.down)
+      controller.entity.y += movementStep;
+    if(canMoveLeft(controller.entity) && controller.entity.isMoving.left)
+      controller.entity.x -= movementStep;
   }
 
-  let updatePlayer = () => {
-    if(canMoveUp(player) && playerController.isMoving.up)
-      player.y -= movementStep;
-    if(canMoveRight(player) && playerController.isMoving.right)
-      player.x += movementStep;
-    if(canMoveDown(player) && playerController.isMoving.down)
-      player.y += movementStep;
-    if(canMoveLeft(player) && playerController.isMoving.left)
-      player.x -= movementStep;
+  let moveEnemy = (controller: Controller) => {
+    if(controller.entity.x > player.x) 
+      controller.entity.x -= movementStep;
+    if(controller.entity.x < player.x)
+      controller.entity.x += movementStep;  
+    if(controller.entity.y < player.y)
+      controller.entity.y += movementStep;
+    if(controller.entity.y > player.y)
+      controller.entity.y -= movementStep;
   }
 
   let canMoveLeft = (entity: Entity) => entity.x > 0;
@@ -62,9 +58,9 @@ document.addEventListener("DOMContentLoaded", () => {
       frame.index = 0;
     
     if(frame.index % enemy.speed === 0)
-      updateEnemy();
+      moveEnemy(enemyController);
     if(frame.index % player.speed === 0)
-      updatePlayer();
+      movePlayer(playerController);
 
     context.clearRect(0, 0, canvas.width, canvas.height);
     draw(player);
