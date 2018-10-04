@@ -5,11 +5,16 @@
   <title>Canvas game</title>
   <style>
     body { text-align: center; padding-top: 100px; }
-    canvas { border: 1px solid #ddd; }
+    .game { position: relative; }
+    #canvasTimer { z-index: 10; position: absolute; left: auto; right: auto; margin: 0 auto; border: 1px solid #ddd; }
+    #canvasGamePlay { z-index: 0; position: absolute; left: auto; right: auto; margin: 0 auto; border: 1px solid #ddd; }
   </style>
   <script src="dist/app.js"></script>
 </head>
 <body>
-  <canvas id="canvas"></canvas>
+  <div class="game">
+    <canvas id="canvasTimer"></canvas>
+    <canvas id="canvasGamePlay"></canvas>
+  </div>
 </body>
 </html>
