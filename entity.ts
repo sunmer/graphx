@@ -1,16 +1,18 @@
 type speed = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+type dimensions = { width: number, height: number };
 
 export default class Entity {
   x: number;
   y: number;
   speed: speed;
-  radius = 10;
+  dimensions: dimensions;
   color: string;
   isMoving: { up: boolean, down: boolean, left: boolean, right: boolean };
   
-  constructor(x: number, y: number, speed: speed, color: string) {
+  constructor(x: number, y: number, dimensions: dimensions, speed: speed, color: string) {
     this.x = x;
     this.y = y;
+    this.dimensions = dimensions;
     this.speed = speed;
     this.color = color;
     this.isMoving = { up: false, down: false, left: false, right: false };    
