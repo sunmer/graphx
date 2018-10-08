@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const contextTimer = canvasTimer.getContext("2d");
   const frame = { rate: 10, index: 0, length: 9 }
   const movementStep = 1;
-  let timeElapsed = 0;
+  let timeElapsed = 1;
   let player: Entity = new Entity(20, 100, { width: 10, height: 10 }, 1, "#dddddd");
   let enemy: Entity = new Entity(canvasWidth / 2, canvasHeight / 2, { width: 10, height: 10 }, 2, "#c52323");
   let playerController: Controller = new Controller(player);
@@ -84,10 +84,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   let timer = setInterval(() => {
+    timeElapsed++;
     contextTimer.clearRect(0, 0, canvasWidth, canvasHeight);
     drawText(timeElapsed.toString());
-    timeElapsed++;
   }, 1000);
+  drawText(timeElapsed.toString());
 
   let gamePlay = setInterval(() => {
     if(areColliding(player, [enemy]))
@@ -107,7 +108,5 @@ document.addEventListener("DOMContentLoaded", () => {
   
     frame.index++
   }, frame.rate);
-
-  drawText(timeElapsed.toString());
 
 }, false);
