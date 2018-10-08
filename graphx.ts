@@ -91,8 +91,10 @@ document.addEventListener("DOMContentLoaded", () => {
   drawText(timeElapsed.toString());
 
   let gamePlay = setInterval(() => {
-    if(areColliding(player, [enemy]))
-      clearInterval(gamePlay)
+    if(areColliding(player, [enemy])) {
+      clearInterval(gamePlay);
+      clearInterval(timer);
+    }
 
     if(frame.index === frame.length)
       frame.index = 0;
