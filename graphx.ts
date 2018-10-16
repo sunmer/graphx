@@ -1,7 +1,7 @@
 import Player from "./player";
 import Enemy from "./player";
 import { Entity } from "./entity";
-import Controller from "./controller";
+
 
 const canvasWidth = 200;
 const canvasHeight = 200;
@@ -44,22 +44,32 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.onkeydown = event => {
-    player.isMoving = { up: false, down: false, left: false, right: false };
+    player.isShooting = false;
   
     switch(event.keyCode) {
       case 32:
-        console.log("space")
+        player.bullets.push(new Entity(
+          player.x, 
+          player.y, 
+          { width: 4, height: 4 }, 
+          2, 
+          "#000000"
+        ));
         break;
       case 40:
+        player.resetMoves();
         player.isMoving.down = true;
         break;
       case 39:
+        player.resetMoves();
         player.isMoving.right = true;
         break;
       case 38:
+        player.resetMoves();
         player.isMoving.up = true;
         break;
       case 37:
+        player.resetMoves();
         player.isMoving.left = true;
         break;
     }
@@ -74,14 +84,9 @@ document.addEventListener("DOMContentLoaded", () => {
       player.y += movementStep;
     if(canMoveLeft(player) && player.isMoving.left)
       player.x -= movementStep;
-    if(player.isShooting) {
-      let bullet: Entity = new Entity(
-        player.x, 
-        player.y, 
-        { width: 4, height: 4 }, 
-        2, 
-        "#000000"
-      );
+    for(let i = 0; i < player.bullets.length; i++) {
+      if(hasExitedCanvas(player.bullets[i]))
+        player.bullets.splice(i, 1);
     }
   }
 
@@ -96,10 +101,17 @@ document.addEventListener("DOMContentLoaded", () => {
       enemy.x -= movementStep;
   }
 
+  let animateBullets = (player: Player) => {
+    for(let i = 0; i < player.bullets.length; i++) {
+      player.bullets[i].y -=1;
+    }
+  }
+
   let canMoveLeft = (entity: Entity) => entity.x > 0;
   let canMoveRight = (entity: Entity) => entity.x + entity.dimensions.width < canvasWidth;
   let canMoveDown = (entity: Entity) => entity.y + entity.dimensions.height < canvasHeight;
   let canMoveUp = (entity: Entity) => entity.y > 0;
+  let hasExitedCanvas = (entity: Entity) => entity.x < 0 || entity.x > canvasWidth || entity.y < 0 || entity.y > canvasHeight;
   let areColliding = (entity: Entity, entities: Entity[]) => {
     for(let i = 0; i < entities.length; i++) {
       if(entity.x > (entities[i].x + entities[i].dimensions.width) || 
@@ -132,10 +144,14 @@ document.addEventListener("DOMContentLoaded", () => {
         animatePlayer(player);
       if(frame.index % enemy.speed === 0)
         animateEnemy(enemy);
+
+      animateBullets(player);
       
       contextGamePlay.clearRect(0, 0, canvasWidth, canvasHeight);
       drawEntity(player);
       drawEntity(enemy);
+      for(let i = 0; i < player.bullets.length; i++)
+        drawEntity(player.bullets[i]);
       
       frame.index++
     }
