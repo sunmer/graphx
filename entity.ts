@@ -1,7 +1,7 @@
-type speed = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
-type dimensions = { width: number, height: number };
+export type speed = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+export type dimensions = { width: number, height: number };
 
-export default class Entity {
+export class Entity {
   x: number;
   y: number;
   speed: speed;
@@ -15,7 +15,7 @@ export default class Entity {
     this.dimensions = dimensions;
     this.speed = speed;
     this.color = color;
-    this.isMoving = { up: false, down: false, left: false, right: false };    
+    this.isMoving = { up: false, down: false, left: false, right: false };
   }
 
 }

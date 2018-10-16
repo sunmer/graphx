@@ -1,4 +1,6 @@
-import Entity from "./entity";
+import Player from "./player";
+import Enemy from "./player";
+import { Entity } from "./entity";
 import Controller from "./controller";
 
 const canvasWidth = 200;
@@ -18,10 +20,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const frame = { rate: 10, index: 0, length: 9 }
   const movementStep = 1;
   let timeElapsed = 1;
-  let player: Entity = new Entity(20, 100, { width: 10, height: 10 }, 1, "#dddddd");
-  let enemy: Entity = new Entity(canvasWidth / 2, canvasHeight / 2, { width: 10, height: 10 }, 2, "#c52323");
-  let playerController: Controller = new Controller(player);
-  let enemyController: Controller = new Controller(enemy);
+  let player: Player = new Player(20, 100, { width: 10, height: 10 }, 1, "#dddddd");
+  let enemy: Enemy = new Enemy(canvasWidth / 2, canvasHeight / 2, { width: 10, height: 10 }, 2, "#c52323");
 
   let drawEntity = (entity: Entity) => {
     contextGamePlay.beginPath();
@@ -43,28 +43,57 @@ document.addEventListener("DOMContentLoaded", () => {
     contextTimer.fillText(text, canvasTimer.width / 2, 50);
   }
 
-  document.onkeydown = event => playerController.keydown(event.keyCode);
-
-  let movePlayer = (controller: Controller) => {
-    if(canMoveUp(controller.entity) && controller.entity.isMoving.up)
-      controller.entity.y -= movementStep;
-    if(canMoveRight(controller.entity) && controller.entity.isMoving.right)
-      controller.entity.x += movementStep;
-    if(canMoveDown(controller.entity) && controller.entity.isMoving.down)
-      controller.entity.y += movementStep;
-    if(canMoveLeft(controller.entity) && controller.entity.isMoving.left)
-      controller.entity.x -= movementStep;
+  document.onkeydown = event => {
+    player.isMoving = { up: false, down: false, left: false, right: false };
+  
+    switch(event.keyCode) {
+      case 32:
+        console.log("space")
+        break;
+      case 40:
+        player.isMoving.down = true;
+        break;
+      case 39:
+        player.isMoving.right = true;
+        break;
+      case 38:
+        player.isMoving.up = true;
+        break;
+      case 37:
+        player.isMoving.left = true;
+        break;
+    }
   }
 
-  let moveEnemy = (controller: Controller) => {
-    if(canMoveUp(controller.entity) && controller.entity.y > player.y)
-      controller.entity.y -= movementStep;
-    if(canMoveRight(controller.entity) && controller.entity.x < player.x)
-      controller.entity.x += movementStep;
-    if(canMoveDown(controller.entity) && controller.entity.y < player.y)
-      controller.entity.y += movementStep;
-    if(canMoveLeft(controller.entity) && controller.entity.x > player.x) 
-      controller.entity.x -= movementStep;
+  let animatePlayer = (player: Player) => {
+    if(canMoveUp(player) && player.isMoving.up)
+      player.y -= movementStep;
+    if(canMoveRight(player) && player.isMoving.right)
+      player.x += movementStep;
+    if(canMoveDown(player) && player.isMoving.down)
+      player.y += movementStep;
+    if(canMoveLeft(player) && player.isMoving.left)
+      player.x -= movementStep;
+    if(player.isShooting) {
+      let bullet: Entity = new Entity(
+        player.x, 
+        player.y, 
+        { width: 4, height: 4 }, 
+        2, 
+        "#000000"
+      );
+    }
+  }
+
+  let animateEnemy = (enemy: Enemy) => {
+    if(canMoveUp(enemy) && enemy.y > player.y)
+      enemy.y -= movementStep;
+    if(canMoveRight(enemy) && enemy.x < player.x)
+      enemy.x += movementStep;
+    if(canMoveDown(enemy) && enemy.y < player.y)
+      enemy.y += movementStep;
+    if(canMoveLeft(enemy) && enemy.x > player.x) 
+      enemy.x -= movementStep;
   }
 
   let canMoveLeft = (entity: Entity) => entity.x > 0;
@@ -88,27 +117,28 @@ document.addEventListener("DOMContentLoaded", () => {
     contextTimer.clearRect(0, 0, canvasWidth, canvasHeight);
     drawText(timeElapsed.toString());
   }, 1000);
+
   drawText(timeElapsed.toString());
 
   let gamePlay = setInterval(() => {
     if(areColliding(player, [enemy])) {
       clearInterval(gamePlay);
       clearInterval(timer);
+    } else {
+      if(frame.index === frame.length)
+        frame.index = 0;
+    
+      if(frame.index % player.speed === 0)
+        animatePlayer(player);
+      if(frame.index % enemy.speed === 0)
+        animateEnemy(enemy);
+      
+      contextGamePlay.clearRect(0, 0, canvasWidth, canvasHeight);
+      drawEntity(player);
+      drawEntity(enemy);
+      
+      frame.index++
     }
-
-    if(frame.index === frame.length)
-      frame.index = 0;
-    
-    if(frame.index % player.speed === 0)
-      movePlayer(playerController);
-    if(frame.index % enemy.speed === 0)
-      moveEnemy(enemyController);
-    
-    contextGamePlay.clearRect(0, 0, canvasWidth, canvasHeight);
-    drawEntity(player);
-    drawEntity(enemy);
-  
-    frame.index++
   }, frame.rate);
 
 }, false);
