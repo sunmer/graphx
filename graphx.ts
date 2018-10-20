@@ -1,5 +1,4 @@
 import Player from "./player";
-import Enemy from "./player";
 import { Entity } from "./entity";
 
 
@@ -21,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const movementStep = 1;
   let timeElapsed = 1;
   let player: Player = new Player(20, 100, { width: 10, height: 10 }, 1, "#dddddd");
-  let enemy: Enemy = new Enemy(canvasWidth / 2, canvasHeight / 2, { width: 10, height: 10 }, 2, "#c52323");
+  let enemies: Array<Entity> = [];
 
   let drawEntity = (entity: Entity) => {
     contextGamePlay.beginPath();
@@ -41,6 +40,16 @@ document.addEventListener("DOMContentLoaded", () => {
     contextTimer.fillStyle = "#444";
     contextTimer.textAlign = "center";
     contextTimer.fillText(text, canvasTimer.width / 2, 50);
+  }
+
+  let spawEnemy = () => {
+    enemies.push(new Entity(
+      canvasWidth / 2, 
+      canvasHeight / 2, 
+      { width: 10, height: 10 }, 
+      2, 
+      "#c52323")
+    );
   }
 
   document.onkeydown = event => {
@@ -75,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  let animatePlayer = (player: Player) => {
+  let movePlayer = (player: Player) => {
     if(canMoveUp(player) && player.isMoving.up)
       player.y -= movementStep;
     if(canMoveRight(player) && player.isMoving.right)
@@ -90,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  let animateEnemy = (enemy: Enemy) => {
+  let moveEnemy = (enemy: Entity) => {
     if(canMoveUp(enemy) && enemy.y > player.y)
       enemy.y -= movementStep;
     if(canMoveRight(enemy) && enemy.x < player.x)
@@ -113,15 +122,20 @@ document.addEventListener("DOMContentLoaded", () => {
   let canMoveUp = (entity: Entity) => entity.y > 0;
   let hasExitedCanvas = (entity: Entity) => entity.x < 0 || entity.x > canvasWidth || entity.y < 0 || entity.y > canvasHeight;
   let areColliding = (entity: Entity, entities: Entity[]) => {
-    for(let i = 0; i < entities.length; i++) {
-      if(entity.x > (entities[i].x + entities[i].dimensions.width) || 
-        (entity.x + entity.dimensions.width) < entities[i].x || 
-        entity.y > (entities[i].y + entities[i].dimensions.height) ||
-        (entity.y + entity.dimensions.height) <  entities[i].y) {
-          return false;
+    if(!entities.length)
+      return false;
+    
+    let isColliding = true;
+    entities.map(e => {
+      if(entity.x > (e.x + e.dimensions.width) || 
+        (entity.x + entity.dimensions.width) < e.x || 
+        entity.y > (e.y + e.dimensions.height) ||
+        (entity.y + entity.dimensions.height) <  e.y) {
+          isColliding = false;
         }
-    }
-    return true;
+    })
+
+    return isColliding;
   }
 
   let timer = setInterval(() => {
@@ -130,31 +144,45 @@ document.addEventListener("DOMContentLoaded", () => {
     drawText(timeElapsed.toString());
   }, 1000);
 
-  drawText(timeElapsed.toString());
-
   let gamePlay = setInterval(() => {
-    if(areColliding(player, [enemy])) {
+    if(areColliding(player, enemies)) {
       clearInterval(gamePlay);
       clearInterval(timer);
     } else {
       if(frame.index === frame.length)
         frame.index = 0;
-    
+
       if(frame.index % player.speed === 0)
-        animatePlayer(player);
-      if(frame.index % enemy.speed === 0)
-        animateEnemy(enemy);
+        movePlayer(player);
+
+      enemies.map(enemy => {
+        if(frame.index % enemy.speed === 0)
+          moveEnemy(enemy);  
+      });
 
       animateBullets(player);
       
       contextGamePlay.clearRect(0, 0, canvasWidth, canvasHeight);
       drawEntity(player);
-      drawEntity(enemy);
-      for(let i = 0; i < player.bullets.length; i++)
-        drawEntity(player.bullets[i]);
+
+      enemies.map(enemy => drawEntity(enemy))
+      player.bullets.map(bullet => drawEntity(bullet))
+      
+      enemies.map((enemy, i) => {
+        if(areColliding(enemy, player.bullets)) {
+          enemies.splice(i, 1);
+          spawEnemy();
+        }
+      })
       
       frame.index++
     }
   }, frame.rate);
+
+  // Init
+  (() => {
+    drawText(timeElapsed.toString());
+    spawEnemy();
+  })();
 
 }, false);
