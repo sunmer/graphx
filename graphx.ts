@@ -16,7 +16,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const contextGamePlay = canvasGamePlay.getContext("2d");
   const contextTimer = canvasTimer.getContext("2d");
-  const frame = { rate: 10, index: 0, length: 9 }
   const movementStep = 1;
   let timeElapsed = 1;
   let player: Player = new Player(20, 100, { width: 10, height: 10 }, 1, "#dddddd");
@@ -47,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
       canvasWidth / 2, 
       canvasHeight / 2, 
       { width: 10, height: 10 }, 
-      2, 
+      4, 
       "#c52323")
     );
   }
@@ -110,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
       enemy.x -= movementStep;
   }
 
-  let animateBullets = (player: Player) => {
+  let moveBullets = (player: Player) => {
     for(let i = 0; i < player.bullets.length; i++) {
       player.bullets[i].y -=1;
     }
@@ -144,40 +143,52 @@ document.addEventListener("DOMContentLoaded", () => {
     drawText(timeElapsed.toString());
   }, 1000);
 
-  let gamePlay = setInterval(() => {
-    if(areColliding(player, enemies)) {
-      clearInterval(gamePlay);
-      clearInterval(timer);
-    } else {
-      if(frame.index === frame.length)
-        frame.index = 0;
+  let duration = 0;
+  let last = window.performance.now();
+  let step = 1/60;
 
-      if(frame.index % player.speed === 0)
+  let gamePlay = function() {
+    let gameOver = false;
+    let now = window.performance.now();
+    duration = duration + Math.min(1, (now - last) / 1000);
+    while(duration > step) {
+      let index = Math.round(now / 10) % 10;
+      
+      if(areColliding(player, enemies))
+        gameOver = true;
+
+      duration = duration - step;
+      if(index % player.speed === 0)
         movePlayer(player);
 
       enemies.map(enemy => {
-        if(frame.index % enemy.speed === 0)
+        if(index % enemy.speed === 0)
           moveEnemy(enemy);  
       });
 
-      animateBullets(player);
-      
-      contextGamePlay.clearRect(0, 0, canvasWidth, canvasHeight);
-      drawEntity(player);
+      moveBullets(player);
 
-      enemies.map(enemy => drawEntity(enemy))
-      player.bullets.map(bullet => drawEntity(bullet))
-      
       enemies.map((enemy, i) => {
         if(areColliding(enemy, player.bullets)) {
           enemies.splice(i, 1);
           spawEnemy();
         }
       })
-      
-      frame.index++
     }
-  }, frame.rate);
+
+    contextGamePlay.clearRect(0, 0, canvasWidth, canvasHeight);
+    drawEntity(player);
+    enemies.map(enemy => drawEntity(enemy))
+    player.bullets.map(bullet => drawEntity(bullet))
+    last = now;
+
+    if(gameOver)
+      clearInterval(timer);
+    else 
+      requestAnimationFrame(gamePlay);
+  }
+
+  requestAnimationFrame(gamePlay);
 
   // Init
   (() => {

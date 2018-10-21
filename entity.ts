@@ -7,7 +7,6 @@ export class Entity {
   speed: speed;
   dimensions: dimensions;
   color: string;
-  isMoving: { up: boolean, down: boolean, left: boolean, right: boolean };
   
   constructor(x: number, y: number, dimensions: dimensions, speed: speed, color: string) {
     this.x = x;
@@ -15,7 +14,6 @@ export class Entity {
     this.dimensions = dimensions;
     this.speed = speed;
     this.color = color;
-    this.isMoving = { up: false, down: false, left: false, right: false };
   }
 
 }
