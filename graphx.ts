@@ -120,22 +120,11 @@ document.addEventListener("DOMContentLoaded", () => {
   let canMoveDown = (entity: Entity) => entity.y + entity.dimensions.height < canvasHeight;
   let canMoveUp = (entity: Entity) => entity.y > 0;
   let hasExitedCanvas = (entity: Entity) => entity.x < 0 || entity.x > canvasWidth || entity.y < 0 || entity.y > canvasHeight;
-  let areColliding = (entity: Entity, entities: Entity[]) => {
-    if(!entities.length)
-      return false;
-    
-    let isColliding = true;
-    entities.map(e => {
-      if(entity.x > (e.x + e.dimensions.width) || 
-        (entity.x + entity.dimensions.width) < e.x || 
-        entity.y > (e.y + e.dimensions.height) ||
-        (entity.y + entity.dimensions.height) <  e.y) {
-          isColliding = false;
-        }
-    })
-
-    return isColliding;
-  }
+  let areColliding = (entity1: Entity, entity2: Entity) =>
+    !(entity1.x > (entity2.x + entity2.dimensions.width) ||
+      (entity1.x + entity1.dimensions.width) < entity2.x || 
+      entity1.y > (entity2.y + entity2.dimensions.height) ||
+      (entity1.y + entity1.dimensions.height) <  entity2.y)
 
   let timer = setInterval(() => {
     timeElapsed++;
@@ -154,9 +143,6 @@ document.addEventListener("DOMContentLoaded", () => {
     while(duration > step) {
       let index = Math.round(now / 10) % 10;
       
-      if(areColliding(player, enemies))
-        gameOver = true;
-
       duration = duration - step;
       if(index % player.speed === 0)
         movePlayer(player);
@@ -169,10 +155,15 @@ document.addEventListener("DOMContentLoaded", () => {
       moveBullets(player);
 
       enemies.map((enemy, i) => {
-        if(areColliding(enemy, player.bullets)) {
-          enemies.splice(i, 1);
-          spawEnemy();
+        if(areColliding(player, enemy)) {
+          gameOver = true;
         }
+        player.bullets.map(bullet => {
+          if(areColliding(enemy, bullet)) {
+            enemies.splice(i, 1);
+            spawEnemy();
+          }
+        })
       })
     }
 
